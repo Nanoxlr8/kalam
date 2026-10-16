@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Kalam</title>
+<script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+<style>
+:root{
+  --bg:#0A0B11; --bg2:#0F1018; --panel:#12131C; --card:#161824; --card2:#1C1F2E; --hover:#20243A;
+  --line:#23273A; --line2:#2F3450; --text:#EEF0F8; --muted:#979CB6; --dim:#626884;
+  --acc:#7C5CFF; --acc-2:#22D3EE; --acc-soft:rgba(124,92,255,.14); --good:#34D399; --warn:#FBBF24; --bad:#F87171; --rec:#FF4D6D;
+  --grad:linear-gradient(135deg,#7C5CFF 0%,#5B7CFF 45%,#22D3EE 100%);
+  --grad-rec:linear-gradient(135deg,#FF4D6D 0%,#FF7A59 100%);
+  --shadow:0 18px 40px -18px rgba(0,0,0,.6); --r:20px;
+  --font:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+}
+[data-theme=light]{
+  --bg:#F4F5FA; --bg2:#ECEEF6; --panel:#FFFFFF; --card:#FFFFFF; --card2:#F4F5FB; --hover:#EEF0F8;
+  --line:#E3E5F0; --line2:#D3D7E6; --text:#151729; --muted:#5B6079; --dim:#8C91A9; --acc-soft:rgba(124,92,255,.10);
+  --shadow:0 14px 34px -20px rgba(30,34,70,.28);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.5 var(--font);overflow:hidden;-webkit-font-smoothing:antialiased;user-select:none}
+input,textarea,select,button{font:inherit;color:inherit}
+.selectable,textarea,input{user-select:text}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:10px;border:3px solid var(--bg)}::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:236px 1fr;height:100vh}
+aside{background:var(--panel);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;padding:22px 14px 16px}
+.brand{display:flex;align-items:center;gap:12px;padding:0 8px 22px}
+.brand .name{font-size:18px;font-weight:700;letter-spacing:.2px}
+.brand .sub{font-size:12px;color:var(--dim);margin-top:-2px}
+nav{display:flex;flex-direction:column;gap:3px}
+nav button{display:flex;align-items:center;gap:12px;padding:10px 12px;border:0;background:transparent;border-radius:12px;color:var(--muted);cursor:pointer;text-align:start;font-weight:500;transition:.15s}
+nav button svg{width:19px;height:19px;flex:none;opacity:.85}
+nav button:hover{background:var(--hover);color:var(--text)}
+nav button.on{background:var(--acc-soft);color:var(--text)}
+nav button.on svg{color:var(--acc);opacity:1}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.status-pill{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.status-pill b{color:var(--text);font-weight:600}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 7px;border-radius:7px;background:var(--bg);border:1px solid var(--line2);border-bottom-width:2px;font-size:12px;font-weight:700;color:var(--text)}
+.toggles{display:flex;gap:8px}
+.seg-mini{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:3px;flex:1}
+.seg-mini button{flex:1;border:0;background:transparent;border-radius:7px;padding:5px 0;font-size:12px;color:var(--muted);cursor:pointer}
+.seg-mini button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+
+main{overflow-y:auto;padding:28px 32px 36px}
+.page{display:none;animation:fade .25s ease}
+.page.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:16px}
+h1{font-size:26px;font-weight:700;letter-spacing:-.3px}
+.lead{color:var(--muted);margin-top:4px;max-width:720px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);position:relative}
+.card-title{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+[dir=rtl] .card-title{letter-spacing:0}
+.muted{color:var(--muted)} .dim{color:var(--dim);font-size:12.5px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--card2);padding:8px 14px;border-radius:11px;cursor:pointer;font-weight:600;font-size:13px;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--acc);background:var(--hover)}
+.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--grad);border:0;color:#fff;box-shadow:0 8px 20px -8px rgba(124,92,255,.7)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)} .btn.ghost:hover{color:var(--text);background:var(--hover)}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:9px}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-size:12px;color:var(--muted);white-space:nowrap}
+.chip.acc{background:var(--acc-soft);border-color:transparent;color:var(--text)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}
+
+/* ---------- home ---------- */
+.home-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:18px}
+.hero{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr auto;gap:30px;align-items:center;padding:26px 30px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 220px at 12% 0%,rgba(124,92,255,.20),transparent 70%),radial-gradient(500px 200px at 95% 110%,rgba(34,211,238,.12),transparent 70%);pointer-events:none;border-radius:inherit}
+.orb-wrap{position:relative;width:150px;height:150px;display:grid;place-items:center}
+.orb-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--line2)}
+.orb-halo{position:absolute;inset:14px;border-radius:50%;background:var(--grad);filter:blur(22px);opacity:.35;transition:transform .08s linear,opacity .2s}
+.orb{position:relative;width:104px;height:104px;border-radius:50%;border:0;background:var(--grad);cursor:pointer;display:grid;place-items:center;color:#fff;box-shadow:0 14px 30px -10px rgba(124,92,255,.8),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .15s}
+.orb:hover{transform:scale(1.04)} .orb:active{transform:scale(.97)}
+.orb svg{width:40px;height:40px}
+.orb .stop{display:none;width:30px;height:30px;border-radius:8px;background:#fff}
+.orb-spin{position:absolute;inset:4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--acc-2);border-right-color:var(--acc-2);opacity:0;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+body.recording .orb{background:var(--grad-rec);box-shadow:0 14px 34px -8px rgba(255,77,109,.8)}
+body.recording .orb svg{display:none} body.recording .orb .stop{display:block}
+body.recording .orb-halo{background:var(--grad-rec);opacity:.55}
+body.recording .orb-ring{border-color:rgba(255,77,109,.5);animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(1.18);opacity:0}}
+body.processing .orb-spin{opacity:1}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--good)}
+[dir=rtl] .eyebrow{letter-spacing:0}
+body.recording .eyebrow{color:var(--rec)} body.processing .eyebrow{color:var(--acc-2)}
+.eyebrow .dot{background:currentColor;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 20%,transparent)}
+.hero h1{font-size:30px;margin:6px 0 6px}
+.hero .hint{color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.hero .hint span{display:inline-flex;align-items:center;gap:7px}
+.wave{height:40px;margin-top:14px;display:flex;align-items:center;gap:3px;opacity:.35;transition:opacity .2s}
+body.recording .wave{opacity:1}
+.wave i{display:block;width:4px;border-radius:3px;background:var(--grad);height:4px;transition:height .08s}
+body.recording .wave i{background:var(--grad-rec)}
+.modes{display:flex;flex-direction:column;gap:8px;min-width:270px;position:relative}
+.mode{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:color-mix(in srgb,var(--card2) 70%,transparent);cursor:pointer;text-align:start;transition:.15s}
+.mode:hover{border-color:var(--line2)}
+.mode.on{border-color:var(--acc);background:var(--acc-soft)}
+.mode .ic{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--card);flex:none;color:var(--muted)}
+.mode.on .ic{background:var(--grad);color:#fff}
+.mode .ic svg{width:17px;height:17px}
+.mode b{display:block;font-size:14px}
+.mode small{display:block;color:var(--muted);font-size:12px;line-height:1.35;max-width:230px}
+
+.transcript{grid-row:span 2;display:flex;flex-direction:column;min-height:330px}
+.tx-body{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 18px;font-size:16px;line-height:1.75;overflow:auto;min-height:170px;max-height:360px}
+.tx-body p{margin:0 0 4px;white-space:pre-wrap}
+.tx-body .ph{color:var(--dim);font-size:14px}
+.tx-body.streaming::after{content:"";display:inline-block;width:8px;height:18px;background:var(--acc-2);margin-inline-start:3px;vertical-align:-3px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.tx-foot{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tx-foot .sp{flex:1}
+
+.big{font-size:38px;font-weight:700;letter-spacing:-1px;line-height:1.1}
+.big small{font-size:16px;font-weight:600;color:var(--muted);letter-spacing:0;margin-inline-start:3px}
+.stack{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--line);margin:14px 0 8px}
+.stack i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:8px;height:8px;border-radius:3px;display:inline-block}
+.spark{display:flex;align-items:flex-end;gap:3px;height:54px;margin-top:14px;position:relative;border-bottom:1px dashed var(--line2)}
+.spark i{flex:1;border-radius:3px 3px 1px 1px;min-height:3px;opacity:.75}
+.spark i:last-child{opacity:1}
+.spark .target{position:absolute;left:0;right:0;border-top:1px dashed var(--dim);opacity:.6}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.kv b{color:var(--text);font-weight:600}
+
+.ring-row{display:flex;align-items:center;gap:18px}
+.ring{position:relative;width:112px;height:112px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+[dir=rtl] .ring svg{transform:rotate(-90deg) scaleY(-1)}
+.ring .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1}
+.ring .c b{font-size:24px;font-weight:700}
+.ring .c span{font-size:11.5px;color:var(--muted)}
+.bars{flex:1;display:flex;flex-direction:column;gap:14px}
+.bar .top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.bar .top b{color:var(--text)}
+.bar .track{height:8px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar .fill{height:100%;border-radius:6px;transition:width .4s}
+.badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:0;text-transform:none}
+.badge.good{background:rgba(52,211,153,.14);color:var(--good)} .badge.warn{background:rgba(251,191,36,.14);color:var(--warn)} .badge.bad{background:rgba(248,113,113,.14);color:var(--bad)}
+.foot-note{font-size:12.5px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.today{display:grid;grid-template-columns:1fr 1fr;gap:16px 12px}
+.today b{display:block;font-size:26px;font-weight:700;letter-spacing:-.5px}
+.today span{font-size:12px;color:var(--muted)}
+
+/* ---------- lists / forms ---------- */
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px}
+.search{flex:1;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 14px}
+.search svg{width:17px;height:17px;color:var(--dim)}
+.search input{flex:1;border:0;background:transparent;outline:0;padding:11px 0}
+.day{font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 8px}
+.hitem{display:flex;gap:16px;padding:14px 16px;border:1px solid var(--line);background:var(--card);border-radius:14px;margin-bottom:8px;transition:.15s}
+.hitem:hover{border-color:var(--line2)}
+.hitem .t{width:52px;flex:none;color:var(--dim);font-size:12.5px;padding-top:2px}
+.hitem .body{flex:1;min-width:0}
+.hitem .txt{font-size:14.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.hitem .meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.hitem .acts{display:flex;gap:4px;opacity:0;transition:.15s;align-items:flex-start}
+.hitem:hover .acts{opacity:1}
+.empty{text-align:center;padding:60px 20px;color:var(--dim)}
+.empty svg{width:44px;height:44px;opacity:.5;margin-bottom:10px}
+
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.field label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.inp{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;outline:0;transition:.15s}
+.inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23979CB6' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-inline-end:34px}
+[dir=rtl] select.inp{background-position:left 12px center}
+select.inp option{background:var(--card2)}
+.row{display:flex;gap:10px;align-items:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.switch-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
+.switch-row:last-child{border-bottom:0}
+.switch-row b{display:block;font-weight:600;font-size:14px}
+.switch-row small{color:var(--muted);font-size:12.5px}
+.sw{position:relative;width:42px;height:24px;flex:none;cursor:pointer}
+.sw input{display:none}
+.sw i{position:absolute;inset:0;background:var(--line2);border-radius:999px;transition:.2s}
+.sw i::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.sw input:checked+i{background:var(--acc)}
+.sw input:checked+i::after{inset-inline-start:21px}
+.pairs{display:flex;flex-direction:column;gap:8px}
+.pair{display:grid;grid-template-columns:1fr 24px 1.6fr 34px;gap:8px;align-items:center}
+.pair .arrow{color:var(--dim);text-align:center}
+[dir=rtl] .pair .arrow{transform:scaleX(-1)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;min-height:52px;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 8px 5px 12px;border-radius:9px;background:var(--acc-soft);font-size:13px}
+.tag button{border:0;background:transparent;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:0 3px}
+.tag button:hover{color:var(--bad)}
+.tags input{flex:1;min-width:140px;border:0;background:transparent;outline:0;padding:5px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;text-align:start;padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:11px 12px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+tr.total td{font-weight:700}
+td input.inp{padding:6px 9px;max-width:110px}
+.tabs{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:9px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px}
+.tabs button.on{background:var(--acc-soft);color:var(--text)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi b{display:block;font-size:26px;font-weight:700;letter-spacing:-.5px}
+.kpi span{color:var(--muted);font-size:12.5px}
+.callout{display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:14px;background:var(--acc-soft);margin-bottom:18px;font-size:13.5px}
+.callout svg{width:20px;height:20px;color:var(--acc);flex:none}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--line2);padding:10px 18px;border-radius:12px;box-shadow:var(--shadow);opacity:0;transition:.25s;pointer-events:none;font-weight:600;z-index:10}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.fx{display:flex;gap:10px;align-items:center}
+.test-msg{font-size:12.5px;color:var(--muted)}
+@media (max-width:1150px){.home-grid{grid-template-columns:1fr 1fr}.transcript{grid-column:1/-1;grid-row:auto}.hero{grid-template-columns:auto 1fr}.modes{grid-column:1/-1;flex-direction:row}.mode small{max-width:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".5" stop-color="#5B7CFF"/><stop offset="1" stop-color="#22D3EE"/></linearGradient>
+  </defs>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-snip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15v2M11 11v6M15 7v10M19 12v5"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/></symbol>
+  <symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+
+<div class="app">
+  <aside>
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40"><rect x="1" y="1" width="38" height="38" rx="11" fill="url(#g1)"/><rect x="1" y="1" width="38" height="19" rx="11" fill="#fff" opacity=".12"/><g fill="#fff"><rect x="9" y="16" width="3.4" height="8" rx="1.7"/><rect x="14.6" y="12" width="3.4" height="16" rx="1.7"/><rect x="20.2" y="8.5" width="3.4" height="23" rx="1.7"/><rect x="25.8" y="12" width="3.4" height="16" rx="1.7"/><rect x="31.4" y="16" width="3.4" height="8" rx="1.7" opacity="0"/></g></svg>
+      <div><div class="name">Kalam</div><div class="sub">كلام · dictation</div></div>
+    </div>
+    <nav id="nav">
+      <button data-p="home" class="on"><svg><use href="#i-home"/></svg><span data-i="nav_home">Home</span></button>
+      <button data-p="history"><svg><use href="#i-history"/></svg><span data-i="nav_history">History</span></button>
+      <button data-p="snippets"><svg><use href="#i-snip"/></svg><span data-i="nav_snippets">Snippets</span></button>
+      <button data-p="dictionary"><svg><use href="#i-book"/></svg><span data-i="nav_dict">Dictionary</span></button>
+      <button data-p="usage"><svg><use href="#i-chart"/></svg><span data-i="nav_usage">Usage & limits</span></button>
+      <button data-p="settings"><svg><use href="#i-gear"/></svg><span data-i="nav_settings">Settings</span></button>
+    </nav>
+    <div class="side-foot">
+      <div class="status-pill">
+        <div class="row" style="justify-content:space-between"><span data-i="side_hotkey">Hotkey</span><span class="kbd" id="side-hk">F8</span></div>
+        <div class="row" style="justify-content:space-between"><span data-i="side_dialect">Dialect</span><b id="side-dialect">—</b></div>
+        <div class="row" style="justify-content:space-between"><span data-i="side_model">Model</span><b id="side-model">—</b></div>
+      </div>
+      <div class="toggles">
+        <div class="seg-mini" id="lang"><button data-v="en">EN</button><button data-v="ar">عربي</button></div>
+        <div class="seg-mini" id="theme"><button data-v="dark">◐</button><button data-v="light">☀</button></div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- HOME -->
+    <section class="page on" id="p-home">
+      <div class="home-grid">
+        <div class="card hero">
+          <div class="orb-wrap">
+            <div class="orb-ring"></div><div class="orb-halo" id="halo"></div><div class="orb-spin"></div>
+            <button class="orb" id="orb" title="Start / stop"><svg><use href="#i-mic"/></svg><span class="stop"></span></button>
+          </div>
+          <div>
+            <div class="eyebrow"><span class="dot"></span><span id="st-eye">Ready</span></div>
+            <h1 id="st-title">Press F8 and start talking</h1>
+            <div class="hint" id="st-hint"></div>
+            <div class="wave" id="wave"></div>
+          </div>
+          <div class="modes" id="modes"></div>
+        </div>
+
+        <div class="card transcript">
+          <div class="card-title"><span data-i="last">Last dictation</span><span class="chip" id="tx-time"></span></div>
+          <div class="tx-body selectable" id="tx"><div class="ph" data-i="tx_ph">Your words will appear here. Press the hotkey in any app and the text is typed where your cursor is.</div></div>
+          <div class="tx-foot">
+            <div id="tx-chips" class="row" style="flex-wrap:wrap;gap:6px"></div>
+            <div class="sp"></div>
+            <button class="btn sm" id="tx-copy"><svg><use href="#i-copy"/></svg><span data-i="copy">Copy</span></button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span data-i="latency">Latency</span><button class="btn sm ghost" id="ping"><svg><use href="#i-bolt"/></svg>Ping</button></div>
+          <div class="big" id="lat-big">—</div>
+          <div class="dim" data-i="lat_sub">from stop to text in your app</div>
+          <div class="stack" id="lat-stack"></div>
+          <div class="legend" id="lat-legend"></div>
+          <div class="spark" id="spark"></div>
+          <div class="kv"><span>p50 <b id="p50">—</b></span><span>p90 <b id="p90">—</b></span><span data-i-t="rtt">RTT <b id="rtt">—</b></span></div>
+        </div>
+
+        <div class="card" style="grid-row:span 2">
+          <div class="card-title"><span data-i="limits">Free-tier limits</span><span class="badge good" id="rl-badge">OK</span></div>
+          <div class="muted" style="margin:-4px 0 14px;font-size:13px" id="rl-model"></div>
+          <div class="ring-row">
+            <div class="ring">
+              <svg width="112" height="112" viewBox="0 0 112 112"><circle cx="56" cy="56" r="48" fill="none" stroke="var(--line)" stroke-width="10"/><circle id="ring-fg" cx="56" cy="56" r="48" fill="none" stroke="var(--good)" stroke-width="10" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="301.6" style="transition:stroke-dashoffset .5s"/></svg>
+              <div class="c"><div><b id="rpd-used">0</b><br><span id="rpd-of">of —</span></div></div>
+            </div>
+            <div class="bars">
+              <div class="dim" data-i="rpd_label" style="font-weight:600">Requests today</div>
+              <div class="bar"><div class="top"><span data-i="rpm">Per minute</span><b id="rpm-t">0 / 0</b></div><div class="track"><div class="fill" id="rpm-f"></div></div></div>
+              <div class="bar"><div class="top"><span data-i="tpm">Tokens / min</span><b id="tpm-t">0 / 0</b></div><div class="track"><div class="fill" id="tpm-f"></div></div></div>
+            </div>
+          </div>
+          <div class="foot-note" id="rl-foot"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span data-i="today">Today</span></div>
+          <div class="today">
+            <div><b id="td-n">0</b><span data-i="td_n">dictations</span></div>
+            <div><b id="td-w">0</b><span data-i="td_w">words</span></div>
+            <div><b id="td-a">0m</b><span data-i="td_a">of audio</span></div>
+            <div><b id="td-s">0m</b><span data-i="td_s">saved vs typing</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="page" id="p-history">
+      <div class="page-head"><div><h1 data-i="nav_history">History</h1><div class="lead" data-i="hist_lead">Everything you dictated, stored only on this PC.</div></div>
+        <button class="btn danger" id="h-clear"><svg><use href="#i-trash"/></svg><span data-i="clear_all">Clear all</span></button></div>
+      <div class="toolbar"><div class="search"><svg><use href="#i-search"/></svg><input id="h-q" data-ph="search" placeholder="Search your dictations…"></div></div>
+      <div id="h-list"></div>
+    </section>
+
+    <!-- SNIPPETS -->
+    <section class="page" id="p-snippets">
+      <div class="page-head"><div><h1 data-i="nav_snippets">Snippets</h1><div class="lead" data-i="snip_lead">Say a trigger phrase and Kalam types the saved text, e.g. "my email" or "ايميلي". It works on its own or inside a sentence.</div></div>
+        <button class="btn primary" id="sn-save" data-i="save">Save</button></div>
+      <div class="card">
+        <div class="pair dim" style="font-weight:600;margin-bottom:6px"><span data-i="sn_say">When I say</span><span></span><span data-i="sn_type">Type this</span><span></span></div>
+        <div class="pairs" id="sn-list"></div>
+        <button class="btn sm" id="sn-add" style="margin-top:12px"><svg><use href="#i-plus"/></svg><span data-i="add">Add</span></button>
+      </div>
+    </section>
+
+    <!-- DICTIONARY -->
+    <section class="page" id="p-dictionary">
+      <div class="page-head"><div><h1 data-i="nav_dict">Dictionary</h1><div class="lead" data-i="dict_lead">Teach Kalam names and terms, and fix words it keeps getting wrong.</div></div>
+        <button class="btn primary" id="d-save" data-i="save">Save</button></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" data-i="vocab">Vocabulary</div>
+          <div class="tags" id="tags"><input id="tag-in" data-ph="tag_ph" placeholder="Type a word and press Enter"></div>
+          <div class="dim" style="margin-top:10px" data-i="vocab_note">Sent to the model as spelling hints.</div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-i="repl">Replacements</div>
+          <div class="pair dim" style="font-weight:600;margin-bottom:6px"><span data-i="rp_from">When it writes</span><span></span><span data-i="rp_to">Replace with</span><span></span></div>
+          <div class="pairs" id="rp-list"></div>
+          <button class="btn sm" id="rp-add" style="margin-top:12px"><svg><use href="#i-plus"/></svg><span data-i="add">Add</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- USAGE -->
+    <section class="page" id="p-usage">
+      <div class="page-head"><div><h1 data-i="nav_usage">Usage & limits</h1></div>
+        <div class="tabs" id="u-tabs"><button data-v="0" class="on" data-i="u_today">Today</button><button data-v="1" data-i="u_7">7 days</button><button data-v="2" data-i="u_30">30 days</button></div></div>
+      <div class="kpis">
+        <div class="card kpi"><b id="k-req">0</b><span data-i="k_req">requests</span></div>
+        <div class="card kpi"><b id="k-audio">0</b><span data-i="k_audio">minutes of audio</span></div>
+        <div class="card kpi"><b id="k-tok">0</b><span data-i="k_tok">tokens</span></div>
+        <div class="card kpi"><b id="k-cost">$0</b><span data-i="k_cost">if you were on the paid tier</span></div>
+      </div>
+      <div class="callout"><svg><use href="#i-info"/></svg><span id="u-call"></span></div>
+      <div class="card" style="margin-bottom:18px"><div class="card-title" data-i="by_model">By model</div><table id="u-table"></table></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title" data-i="lat_model">Latency by model · last 50</div><table id="lat-table"></table></div>
+        <div class="card"><div class="card-title"><span data-i="lim_edit">Free-tier limits</span><button class="btn sm" id="lim-save" data-i="save">Save</button></div><table id="lim-table"></table>
+          <div class="dim" style="margin-top:12px" data-i="lim_note">Starting values are estimates. When Google returns a 429, Kalam reads the real quota from the error and updates it automatically (shown in color).</div></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" id="p-settings">
+      <div class="page-head"><div><h1 data-i="nav_settings">Settings</h1></div><button class="btn primary" id="s-save" data-i="save_settings">Save settings</button></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" data-i="s_api">Gemini API</div>
+          <div class="field"><label data-i="s_key">Google AI Studio API key</label>
+            <div class="row"><input class="inp" id="s-key" type="password" placeholder="AIza… / AQ…"><button class="btn" id="s-show" data-i="show">Show</button></div></div>
+          <div class="fx" style="margin:-4px 0 18px"><button class="btn sm" id="s-test"><svg><use href="#i-bolt"/></svg><span data-i="test">Test connection</span></button><span class="test-msg" id="s-test-msg"></span></div>
+          <div class="field"><label data-i="s_model">Model</label><select class="inp" id="s-model"></select><div class="dim" id="s-model-note"></div></div>
+          <div class="switch-row"><div><b data-i="s_fb">Fallback model</b><small data-i="s_fb_d">If the model is rate-limited or busy, retry once with another model. It has its own free quota.</small></div><label class="sw"><input type="checkbox" id="s-usefb"><i></i></label></div>
+          <div class="field" style="margin-top:10px"><select class="inp" id="s-fb"></select></div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-i="s_dict">Dictation</div>
+          <div class="grid-2" style="gap:12px">
+            <div class="field"><label data-i="s_hk">Hotkey</label><select class="inp" id="s-hk"></select></div>
+            <div class="field"><label data-i="s_dialect">Arabic dialect</label><select class="inp" id="s-dialect"></select></div>
+          </div>
+          <div class="field"><label data-i="s_mic">Microphone</label><select class="inp" id="s-mic"></select></div>
+          <div class="switch-row"><div><b data-i="s_paste">Type into the app I'm using</b><small data-i="s_paste_d">Auto-paste where your cursor is</small></div><label class="sw"><input type="checkbox" id="s-paste"><i></i></label></div>
+          <div class="switch-row"><div><b data-i="s_restore">Restore my clipboard</b><small data-i="s_restore_d">Puts back what you had copied</small></div><label class="sw"><input type="checkbox" id="s-restore"><i></i></label></div>
+          <div class="switch-row"><div><b data-i="s_ctx">Adapt to the app</b><small data-i="s_ctx_d">Outlook → email tone. Sends the app name only.</small></div><label class="sw"><input type="checkbox" id="s-ctx"><i></i></label></div>
+          <div class="switch-row"><div><b data-i="s_trim">Skip silent recordings</b><small data-i="s_trim_d">Doesn't spend quota when nothing was said</small></div><label class="sw"><input type="checkbox" id="s-trim"><i></i></label></div>
+          <div class="switch-row"><div><b data-i="s_pill">Show a tiny pill when idle</b><small data-i="s_pill_d">Always-visible indicator at the bottom of the screen</small></div><label class="sw"><input type="checkbox" id="s-pill"><i></i></label></div>
+          <div class="switch-row"><div><b data-i="s_snd">Sounds</b><small data-i="s_snd_d">Soft tones on start and stop</small></div><label class="sw"><input type="checkbox" id="s-snd"><i></i></label></div>
+          <div class="dim" style="margin-top:12px" id="s-dir"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const I18N = {
+ en:{nav_home:"Home",nav_history:"History",nav_snippets:"Snippets",nav_dict:"Dictionary",nav_usage:"Usage & limits",nav_settings:"Settings",
+  side_hotkey:"Hotkey",side_dialect:"Dialect",side_model:"Model",last:"Last dictation",copy:"Copy",latency:"Latency",lat_sub:"from stop to text in your app",
+  limits:"Free-tier limits",rpd_label:"Requests today",rpm:"Per minute",tpm:"Tokens / min",today:"Today",td_n:"dictations",td_w:"words",td_a:"of audio",td_s:"saved vs typing",
+  tx_ph:"Your words will appear here. Press the hotkey in any app and the text is typed where your cursor is.",
+  hist_lead:"Everything you dictated, stored only on this PC.",clear_all:"Clear all",search:"Search your dictations…",
+  snip_lead:"Say a trigger phrase and Kalam types the saved text, e.g. “my email” or “ايميلي”. It works on its own or inside a sentence.",save:"Save",sn_say:"When I say",sn_type:"Type this",add:"Add",
+  dict_lead:"Teach Kalam names and terms, and fix words it keeps getting wrong.",vocab:"Vocabulary",tag_ph:"Type a word and press Enter",vocab_note:"Sent to the model as spelling hints (a few tokens per request).",
+  repl:"Replacements",rp_from:"When it writes",rp_to:"Replace with",u_today:"Today",u_7:"7 days",u_30:"30 days",k_req:"requests",k_audio:"minutes of audio",k_tok:"tokens",k_cost:"if you were on the paid tier",
+  by_model:"By model",lat_model:"Latency by model · last 50",lim_edit:"Free-tier limits",lim_note:"Starting values are estimates. When Google returns a 429, Kalam reads the real quota from the error and updates it automatically (shown in color).",
+  save_settings:"Save settings",s_api:"Gemini API",s_key:"Google AI Studio API key",show:"Show",hide:"Hide",test:"Test connection",s_model:"Model",s_fb:"Fallback model",s_fb_d:"If the model is rate-limited or busy, retry once with another model. It has its own free quota.",
+  s_dict:"Dictation",s_hk:"Hotkey",s_dialect:"Arabic dialect",s_mic:"Microphone",s_paste:"Type into the app I'm using",s_paste_d:"Auto-paste where your cursor is",s_restore:"Restore my clipboard",s_restore_d:"Puts back what you had copied",
+  s_ctx:"Adapt to the app",s_ctx_d:"Outlook → email tone. Sends the app name only.",s_trim:"Skip silent recordings",s_trim_d:"Doesn't spend quota when nothing was said",s_pill:"Show a tiny pill when idle",s_pill_d:"Always-visible indicator at the bottom of the screen",s_snd:"Sounds",s_snd_d:"Soft tones on start and stop",
+  ready:"Ready",listening:"Listening",transcribing:"Transcribing",t_ready:"Press {hk} and start talking",t_listen:"I'm listening…",t_proc:"Writing it down…",
+  h_tap:"tap to start / stop",h_hold:"hold to talk",h_esc:"cancel",h_click:"or click the mic",h_stop:"again to finish",
+  seg_enc:"encode",seg_first:"first word",seg_rest:"rest",seg_paste:"paste",no_data:"Dictate something to see timings",
+  ok:"Healthy",near:"Near limit",over:"Limit reached",cool:"Cooling down {s}s",resets:"Daily quota resets in {h}h {m}m (midnight Pacific)",pace:"25 dictations/day ≈ {p}% of the daily quota",fb:"Fallback {m}: {u}/{l} today",
+  learned:"limits learned from Google",estimated:"limits estimated",empty_hist:"Nothing here yet. Press the hotkey and say something.",
+  saved:"Saved",copied:"Copied",confirm_clear:"Delete all saved transcripts? Usage stats are kept.",
+  u_call:"You pay $0 on the free tier. On the paid tier this pace would cost about ${m}/month. Wispr Flow Pro is about $15/month.",u_none:"No requests in this period yet.",
+  th_model:"Model",th_req:"Requests",th_ok:"OK",th_429:"429s",th_audio:"Audio",th_in:"Audio tok",th_text:"Text tok",th_out:"Out tok",th_cost:"If paid",th_first:"First word",th_avg:"Avg audio",total:"Total",
+  data_dir:"Data folder: ",default_mic:"System default",via_fb:"via fallback"},
+ ar:{nav_home:"الرئيسية",nav_history:"السجل",nav_snippets:"الاختصارات",nav_dict:"القاموس",nav_usage:"الاستخدام والحدود",nav_settings:"الإعدادات",
+  side_hotkey:"زر التسجيل",side_dialect:"اللهجة",side_model:"الموديل",last:"آخر إملاء",copy:"نسخ",latency:"السرعة",lat_sub:"من وقف التسجيل لحد ما النص يتكتب",
+  limits:"حدود الباقة المجانية",rpd_label:"طلبات النهارده",rpm:"في الدقيقة",tpm:"توكنز / دقيقة",today:"النهارده",td_n:"مرة إملاء",td_w:"كلمة",td_a:"صوت",td_s:"وفّرتها بدل الكتابة",
+  tx_ph:"كلامك هيظهر هنا. دوس الزر في أي برنامج والنص هيتكتب مكان المؤشر.",
+  hist_lead:"كل اللي أمليته، محفوظ على جهازك بس.",clear_all:"مسح الكل",search:"دوّر في كلامك…",
+  snip_lead:"قول كلمة معينة وكلام يكتب بدالها النص المحفوظ، زي \"ايميلي\" أو \"my email\". بتشتغل لوحدها أو في نص الجملة.",save:"حفظ",sn_say:"لما أقول",sn_type:"اكتب",add:"إضافة",
+  dict_lead:"علّم كلام الأسماء والمصطلحات، وصلّح الكلمات اللي بيغلط فيها.",vocab:"الكلمات",tag_ph:"اكتب كلمة ودوس Enter",vocab_note:"بتتبعت للموديل عشان يكتبها صح.",
+  repl:"استبدال",rp_from:"لما يكتب",rp_to:"غيّرها لـ",u_today:"النهارده",u_7:"٧ أيام",u_30:"٣٠ يوم",k_req:"طلب",k_audio:"دقيقة صوت",k_tok:"توكن",k_cost:"لو كنت على الباقة المدفوعة",
+  by_model:"حسب الموديل",lat_model:"السرعة حسب الموديل · آخر ٥٠",lim_edit:"حدود الباقة المجانية",lim_note:"الأرقام دي تقديرية. لما جوجل يرجّع خطأ 429، كلام بيقرا الحد الحقيقي ويحدّثه لوحده (بيظهر ملوّن).",
+  save_settings:"حفظ الإعدادات",s_api:"Gemini API",s_key:"مفتاح Google AI Studio",show:"إظهار",hide:"إخفاء",test:"اختبار الاتصال",s_model:"الموديل",s_fb:"موديل احتياطي",s_fb_d:"لو الموديل وصل للحد أو مشغول، يجرب مرة بموديل تاني ليه حصة مجانية منفصلة.",
+  s_dict:"الإملاء",s_hk:"زر التسجيل",s_dialect:"اللهجة العربية",s_mic:"الميكروفون",s_paste:"اكتب في البرنامج اللي أنا فيه",s_paste_d:"لصق تلقائي مكان المؤشر",s_restore:"رجّع الحافظة",s_restore_d:"يرجّع اللي كنت ناسخه قبل كده",
+  s_ctx:"اتأقلم مع البرنامج",s_ctx_d:"Outlook ← أسلوب إيميل. بيبعت اسم البرنامج بس.",s_trim:"تجاهل التسجيل الصامت",s_trim_d:"ما يصرفش من الحصة لو ما اتقالش حاجة",s_pill:"مؤشر صغير دايمًا",s_pill_d:"علامة صغيرة تحت الشاشة وقت الانتظار",s_snd:"الأصوات",s_snd_d:"نغمة خفيفة مع البداية والنهاية",
+  ready:"جاهز",listening:"بيسمعك",transcribing:"بيكتب",t_ready:"دوس {hk} وابدأ اتكلم",t_listen:"سامعك…",t_proc:"بكتب كلامك…",
+  h_tap:"دوسة للبدء والإيقاف",h_hold:"أو خليك دايس وإنت بتتكلم",h_esc:"إلغاء",h_click:"أو دوس على المايك",h_stop:"تاني عشان تخلص",
+  seg_enc:"ضغط",seg_first:"أول كلمة",seg_rest:"باقي النص",seg_paste:"لصق",no_data:"أملي حاجة عشان تشوف السرعة",
+  ok:"تمام",near:"قرّب من الحد",over:"وصل للحد",cool:"استنى {s} ثانية",resets:"الحصة اليومية بتتجدد بعد {h} ساعة و{m} دقيقة",pace:"٢٥ مرة في اليوم ≈ {p}% من الحصة",fb:"الاحتياطي {m}: {u}/{l} النهارده",
+  learned:"الحدود من جوجل",estimated:"حدود تقديرية",empty_hist:"لسه مفيش حاجة. دوس الزر وقول أي حاجة.",
+  saved:"اتحفظ",copied:"اتنسخ",confirm_clear:"تمسح كل النصوص المحفوظة؟ إحصائيات الاستخدام هتفضل.",
+  u_call:"إنت بتدفع ٠ دولار على الباقة المجانية. على المدفوعة، الاستخدام ده هيكلف حوالي ${m} في الشهر. Wispr Flow Pro حوالي ١٥ دولار في الشهر.",u_none:"مفيش طلبات في الفترة دي.",
+  th_model:"الموديل",th_req:"طلبات",th_ok:"نجح",th_429:"429",th_audio:"صوت",th_in:"توكن صوت",th_text:"توكن نص",th_out:"توكن ناتج",th_cost:"لو مدفوع",th_first:"أول كلمة",th_avg:"متوسط الصوت",total:"الإجمالي",
+  data_dir:"مجلد البيانات: ",default_mic:"الافتراضي",via_fb:"بالاحتياطي"}
+};
+const MODE_AR = {smart:["ذكي","يشيل الـ امم والتكرار، يحط علامات ترقيم ويرقّم القوايم. بيحافظ على كلامك."],
+                 exact:["حرفي","زي ما قلته بالظبط، بس بيشيل الـ امم ويحط ترقيم."],
+                 rewrite:["إعادة صياغة","بيحوّل كلامك لنص مرتب واحترافي، بنفس المعلومات."]};
+const MODE_IC = {smart:"i-spark",exact:"i-quote",rewrite:"i-pen"};
+let B=null, D=null, S=null, lang="en", theme="dark", state="idle", lastLive=null, hist=[], usagePeriod=0, vocab=[];
+const $=id=>document.getElementById(id);
+const t=(k,v={})=>{let s=(I18N[lang]||I18N.en)[k]??I18N.en[k]??k;for(const [a,b] of Object.entries(v))s=s.replaceAll("{"+a+"}",b);return s};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtMs=ms=>ms==null?"—":ms>=1000?(ms/1000).toFixed(1)+" s":Math.round(ms)+" ms";
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"k":String(Math.round(n||0));
+const latC=ms=>ms==null?"var(--muted)":ms<2000?"var(--good)":ms<4000?"var(--warn)":"var(--bad)";
+const fracC=f=>f<.6?"var(--good)":f<.85?"var(--warn)":"var(--bad)";
+const isRtl=s=>{const ar=(s.match(/[\u0600-\u06FF]+/g)||[]).length,la=(s.match(/[A-Za-z]+/g)||[]).length;return ar>0&&ar>=la};
+const bidi=txt=>String(txt).split("\n").map(l=>`<p dir="${isRtl(l)?"rtl":"ltr"}">${esc(l)||"&nbsp;"}</p>`).join("");
+const hkName=h=>h.length<=3?h.toUpperCase():h.replace(/\b\w/g,c=>c.toUpperCase());
+function toast(m){const el=$("toast");el.textContent=m;el.classList.add("on");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("on"),1800)}
+
+/* ---------- boot ---------- */
+new QWebChannel(qt.webChannelTransport, ch=>{
+  B=ch.objects.bridge;
+  B.push.connect(onPush);
+  B.init(j=>{D=JSON.parse(j);S=D.settings;lang=S.ui_lang||"en";theme=S.ui_theme||"dark";state=D.state;buildStatic();applyLang();fillSettings();refresh();});
+});
+function onPush(j){const e=JSON.parse(j);
+  if(e.type==="tick")refresh();
+  else if(e.type==="state"){state=e.state;renderState();if(state==="processing"){$("tx").innerHTML="";$("tx").classList.add("streaming")}else $("tx").classList.remove("streaming");refresh()}
+  else if(e.type==="level")setLevel(e.v);
+  else if(e.type==="preview"){$("tx").innerHTML=bidi(e.text);$("tx").classList.add("streaming")}
+  else if(e.type==="result"){showResult(e);refresh()}
+  else if(e.type==="mode"){S.mode=e.mode;renderModes()}
+  else if(e.type==="toast")toast(e.msg);
+  else if(e.type==="test")$("s-test-msg").textContent=e.msg;
+  else if(e.type==="ping"){if(e.err)toast("Ping: "+e.err);refresh()}
+  else if(e.type==="goto")go(e.page);
+  else if(e.type==="reload_settings")B.init(j=>{D=JSON.parse(j);S=D.settings;fillSettings();renderState();renderModes();sideInfo()});
+}
+
+function buildStatic(){
+  $("wave").innerHTML=Array.from({length:48},()=>"<i></i>").join("");
+  document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>go(b.dataset.p));
+  document.querySelectorAll("#lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.v;B.saveSettings(JSON.stringify({ui_lang:lang}),()=>{});applyLang()});
+  document.querySelectorAll("#theme button").forEach(b=>b.onclick=()=>{theme=b.dataset.v;B.saveSettings(JSON.stringify({ui_theme:theme}),()=>{});applyLang()});
+  $("orb").onclick=()=>B.toggle();
+  $("tx-copy").onclick=()=>lastLive&&lastLive.last&&B.copy(lastLive.last.text);
+  $("ping").onclick=()=>B.ping();
+  $("h-q").oninput=()=>loadHistory();
+  $("h-clear").onclick=()=>{if(confirm(t("confirm_clear"))){B.clearHistory();loadHistory()}};
+  $("sn-add").onclick=()=>addPair("sn-list","","");
+  $("rp-add").onclick=()=>addPair("rp-list","","");
+  $("sn-save").onclick=()=>save({snippets:readPairs("sn-list","trigger","text")});
+  $("d-save").onclick=()=>save({vocabulary:vocab,replacements:readPairs("rp-list","from","to")});
+  $("tag-in").onkeydown=e=>{if(e.key==="Enter"||e.key===","){e.preventDefault();const v=e.target.value.trim();if(v&&!vocab.includes(v)){vocab.push(v);renderTags()}e.target.value=""}else if(e.key==="Backspace"&&!e.target.value&&vocab.length){vocab.pop();renderTags()}};
+  $("tags").onclick=()=>$("tag-in").focus();
+  document.querySelectorAll("#u-tabs button").forEach(b=>b.onclick=()=>{usagePeriod=+b.dataset.v;document.querySelectorAll("#u-tabs button").forEach(x=>x.classList.toggle("on",x===b));loadUsage()});
+  $("lim-save").onclick=()=>{const out={};document.querySelectorAll("#lim-table input").forEach(i=>{(out[i.dataset.m]??={})[i.dataset.k]=i.value.trim()});B.saveLimits(JSON.stringify(out));toast(t("saved"));refresh()};
+  $("s-show").onclick=()=>{const k=$("s-key");k.type=k.type==="password"?"text":"password";$("s-show").textContent=t(k.type==="password"?"show":"hide")};
+  $("s-test").onclick=()=>{$("s-test-msg").textContent="…";B.testConnection($("s-key").value.trim(),$("s-model").value)};
+  $("s-model").onchange=()=>$("s-model-note").textContent=(D.models.find(m=>m.id===$("s-model").value)||{}).note||"";
+  // switches & dropdowns save instantly; the API key still uses the Save button
+  const inst={"s-usefb":"use_fallback","s-paste":"auto_paste","s-restore":"restore_clipboard","s-ctx":"app_context","s-trim":"trim_silence","s-pill":"overlay_idle","s-snd":"sounds"};
+  for(const [id,k] of Object.entries(inst))$(id).onchange=e=>save({[k]:e.target.checked});
+  const sel={"s-fb":"fallback_model","s-hk":"hotkey","s-dialect":"dialect"};
+  for(const [id,k] of Object.entries(sel))$(id).addEventListener("change",e=>save({[k]:e.target.value}));
+  $("s-model").addEventListener("change",e=>save({model:e.target.value}));
+  $("s-mic").onchange=e=>save({mic:e.target.value===""?null:+e.target.value});
+  $("s-save").onclick=()=>save({api_key:$("s-key").value.trim(),model:$("s-model").value,fallback_model:$("s-fb").value,use_fallback:$("s-usefb").checked,
+     hotkey:$("s-hk").value,dialect:$("s-dialect").value,mic:$("s-mic").value===""?null:+$("s-mic").value,auto_paste:$("s-paste").checked,
+     restore_clipboard:$("s-restore").checked,app_context:$("s-ctx").checked,trim_silence:$("s-trim").checked,overlay_idle:$("s-pill").checked,sounds:$("s-snd").checked});
+}
+function save(obj){Object.assign(S,obj);B.saveSettings(JSON.stringify(obj),()=>{toast(t("saved"));sideInfo();renderState();refresh()})}
+function go(p){document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
+  document.querySelectorAll(".page").forEach(x=>x.classList.toggle("on",x.id==="p-"+p));
+  if(p==="history")loadHistory(); if(p==="usage")loadUsage();}
+
+function applyLang(){
+  document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";document.documentElement.dataset.theme=theme;
+  document.querySelectorAll("[data-i]").forEach(el=>{if(!el.querySelector("svg"))el.textContent=t(el.dataset.i)});
+  document.querySelectorAll("[data-ph]").forEach(el=>el.placeholder=t(el.dataset.ph));
+  document.querySelectorAll("#lang button").forEach(b=>b.classList.toggle("on",b.dataset.v===lang));
+  document.querySelectorAll("#theme button").forEach(b=>b.classList.toggle("on",b.dataset.v===theme));
+  $("s-dir").textContent=t("data_dir")+D.data_dir;
+  renderModes();renderState();sideInfo();if(lastLive)renderLive(lastLive);
+  if(document.getElementById("p-history").classList.contains("on"))loadHistory();
+  if(document.getElementById("p-usage").classList.contains("on"))loadUsage();
+}
+function sideInfo(){$("side-hk").textContent=hkName(S.hotkey);$("side-dialect").textContent=((D.dialects.find(d=>d.id===S.dialect)||{}).label||"").split(" (")[0];
+  $("side-model").textContent=((D.models.find(m=>m.id===S.model)||{}).label||S.model).replace("Gemini ","")}
+
+/* ---------- home ---------- */
+function renderModes(){
+  $("modes").innerHTML=Object.entries(D.modes).map(([k,m])=>{const [n,d]=lang==="ar"?MODE_AR[k]:[m.label,m.desc];
+    return `<button class="mode ${S.mode===k?"on":""}" data-m="${k}"><span class="ic"><svg><use href="#${MODE_IC[k]}"/></svg></span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></button>`}).join("");
+  $("modes").querySelectorAll(".mode").forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;B.setMode(b.dataset.m);renderModes()});
+}
+function renderState(){
+  document.body.classList.toggle("recording",state==="recording");document.body.classList.toggle("processing",state==="processing");
+  const hk=`<span class="kbd">${hkName(S.hotkey)}</span>`;
+  $("st-eye").textContent=t(state==="recording"?"listening":state==="processing"?"transcribing":"ready");
+  $("st-title").textContent=state==="recording"?t("t_listen"):state==="processing"?t("t_proc"):t("t_ready",{hk:hkName(S.hotkey)});
+  $("st-hint").innerHTML=state==="recording"
+    ?`<span>${hk} ${t("h_stop")}</span><span><span class="kbd">Esc</span> ${t("h_esc")}</span>`
+    :`<span>${hk} ${t("h_tap")}</span><span>${t("h_hold")}</span><span><span class="kbd">Esc</span> ${t("h_esc")}</span>`;
+  if(state!=="recording")setLevel(0);
+}
+let lv=new Array(48).fill(0);
+function setLevel(v){lv.push(v);lv.shift();const bars=$("wave").children;for(let i=0;i<bars.length;i++)bars[i].style.height=(4+lv[i]*34)+"px";
+  $("halo").style.transform=`scale(${1+v*.45})`}
+function showResult(e){$("tx").classList.remove("streaming");$("tx").innerHTML=bidi(e.text);renderTxMeta(e)}
+function renderTxMeta(L){if(!L)return;const c=[];if(L.model)c.push(`<span class="chip acc">${esc(L.model.replace("gemini-",""))}</span>`);
+  if(L.mode)c.push(`<span class="chip">${esc(lang==="ar"?MODE_AR[L.mode][0]:D.modes[L.mode].label)}</span>`);
+  if(L.total_ms)c.push(`<span class="chip" style="color:${latC(L.total_ms)}">⚡ ${fmtMs(L.total_ms)}</span>`);
+  if(L.app)c.push(`<span class="chip">${esc(L.app)}</span>`);if(L.fallback)c.push(`<span class="chip">${t("via_fb")}</span>`);
+  $("tx-chips").innerHTML=c.join("");$("tx-time").textContent=L.ts?new Date(L.ts*1000).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):""}
+function refresh(){if(B)B.live(j=>{lastLive=JSON.parse(j);renderLive(lastLive)})}
+function renderLive(d){
+  if(d.state&&d.state!==state){state=d.state;renderState()}
+  const L=d.latency, last=L.last;
+  $("lat-big").innerHTML=last?fmtMs(last.total_ms).replace(/ (s|ms)$/,"<small>$1</small>"):"—";$("lat-big").style.color=last?latC(last.total_ms):"";
+  if(last){const enc=last.encode_ms||0,first=last.ttft_ms||0,rest=Math.max(0,(last.api_ms||0)-first),paste=last.paste_ms||0,tot=Math.max(1,enc+first+rest+paste);
+    const seg=[[enc,"#A78BFA","seg_enc"],[first,"#5B7CFF","seg_first"],[rest,"#22D3EE","seg_rest"],[paste,"#34D399","seg_paste"]];
+    $("lat-stack").innerHTML=seg.map(([v,c])=>`<i style="width:${v/tot*100}%;background:${c}"></i>`).join("");
+    $("lat-legend").innerHTML=seg.map(([v,c,k])=>`<span><i style="background:${c}"></i>${t(k)} ${fmtMs(v)}</span>`).join("");
+  }else{$("lat-stack").innerHTML="";$("lat-legend").innerHTML=`<span>${t("no_data")}</span>`}
+  const mx=Math.max(4000,...L.spark);$("spark").innerHTML=`<div class="target" style="bottom:${2000/mx*100}%"></div>`+L.spark.map(v=>`<i style="height:${Math.max(4,v/mx*100)}%;background:${latC(v)}" title="${fmtMs(v)}"></i>`).join("");
+  $("p50").textContent=fmtMs(L.p50);$("p90").textContent=fmtMs(L.p90);$("rtt").textContent=fmtMs(L.rtt);
+  const R=d.limits,[du,dl]=R.rpd,fd=dl?du/dl:0;
+  $("rl-model").textContent=`${R.label} · ${t(R.learned?"learned":"estimated")}`;
+  $("rpd-used").textContent=du;$("rpd-of").textContent=(lang==="ar"?"من ":"of ")+(dl||"?");
+  const fg=$("ring-fg");fg.style.strokeDashoffset=301.6*(1-Math.min(1,fd));fg.style.stroke=fracC(fd);
+  const bar=(id,[u,l])=>{const f=l?u/l:0;$(id+"-t").textContent=`${fmtN(u)} / ${fmtN(l)}`;const el=$(id+"-f");el.style.width=Math.min(100,f*100)+"%";el.style.background=fracC(f)};
+  bar("rpm",R.rpm);bar("tpm",R.tpm);
+  const worst=Math.max(fd,R.rpm[1]?R.rpm[0]/R.rpm[1]:0),badge=$("rl-badge");
+  if(R.cooldown>0){badge.className="badge bad";badge.textContent=t("cool",{s:Math.ceil(R.cooldown)})}
+  else if(worst>=1){badge.className="badge bad";badge.textContent=t("over")}
+  else if(worst>=.8){badge.className="badge warn";badge.textContent=t("near")}
+  else{badge.className="badge good";badge.textContent=t("ok")}
+  const h=Math.floor(R.reset_in/3600),m=Math.floor(R.reset_in%3600/60);
+  let foot=`<span>${t("resets",{h,m})}</span><span>${t("pace",{p:dl?Math.round(25/dl*100):"?"})}</span>`;
+  if(R.fallback)foot+=`<span>${t("fb",{m:R.fallback.label,u:R.fallback.rpd[0],l:R.fallback.rpd[1]})}</span>`;
+  $("rl-foot").innerHTML=foot;
+  const T=d.today;$("td-n").textContent=T.n;$("td-w").textContent=fmtN(T.words);$("td-a").textContent=T.audio_min.toFixed(1)+"m";$("td-s").textContent=Math.round(T.saved_min)+"m";
+  if(d.last&&state!=="processing"&&!$("tx").dataset.set){$("tx").innerHTML=bidi(d.last.text);$("tx").dataset.set=1;renderTxMeta(d.last)}
+  if(d.last)renderTxMeta(d.last);
+}
+
+/* ---------- history ---------- */
+function loadHistory(){B.history($("h-q").value,j=>{hist=JSON.parse(j);renderHistory()})}
+function renderHistory(){
+  if(!hist.length){$("h-list").innerHTML=`<div class="empty"><svg><use href="#i-mic"/></svg><div>${t("empty_hist")}</div></div>`;return}
+  let html="",day="";
+  for(const r of hist){const d=new Date(r.ts*1000),dk=d.toLocaleDateString(lang==="ar"?"ar-EG":"en-US",{weekday:"long",month:"short",day:"numeric"});
+    if(dk!==day){day=dk;html+=`<div class="day">${esc(dk)}</div>`}
+    html+=`<div class="hitem"><div class="t">${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</div><div class="body"><div class="txt selectable" dir="${isRtl(r.text)?"rtl":"ltr"}">${esc(r.text)}</div>
+      <div class="meta">${r.app?`<span class="chip">${esc(r.app)}</span>`:""}<span class="chip">${esc(lang==="ar"?MODE_AR[r.mode]?.[0]||r.mode:D.modes[r.mode]?.label||r.mode)}</span>
+      <span class="chip" style="color:${latC(r.total_ms)}">⚡ ${fmtMs(r.total_ms)}</span><span class="chip">${r.words||0} ${t("td_w")}</span></div></div>
+      <div class="acts"><button class="btn sm ghost" data-c="${r.id}" title="${t("copy")}"><svg><use href="#i-copy"/></svg></button><button class="btn sm ghost danger" data-d="${r.id}"><svg><use href="#i-trash"/></svg></button></div></div>`}
+  $("h-list").innerHTML=html;
+  $("h-list").querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{B.copy(hist.find(x=>x.id==b.dataset.c).text);toast(t("copied"))});
+  $("h-list").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{B.deleteItem(+b.dataset.d);loadHistory()});
+}
+
+/* ---------- snippets / dictionary ---------- */
+function addPair(list,a,b){const row=document.createElement("div");row.className="pair";
+  row.innerHTML=`<input class="inp a" dir="auto"><span class="arrow"><svg width="16" height="16"><use href="#i-arrow"/></svg></span><input class="inp b" dir="auto"><button class="btn sm ghost danger"><svg><use href="#i-x"/></svg></button>`;
+  row.querySelector(".a").value=a;row.querySelector(".b").value=b;row.querySelector("button").onclick=()=>row.remove();$(list).appendChild(row)}
+function readPairs(list,ka,kb){return [...$(list).querySelectorAll(".pair")].map(r=>({[ka]:r.querySelector(".a").value.trim(),[kb]:r.querySelector(".b").value})).filter(x=>x[ka])}
+function renderTags(){const inp=$("tag-in");$("tags").querySelectorAll(".tag").forEach(x=>x.remove());
+  vocab.forEach((v,i)=>{const s=document.createElement("span");s.className="tag";s.innerHTML=`<span dir="auto">${esc(v)}</span><button>×</button>`;s.querySelector("button").onclick=e=>{e.stopPropagation();vocab.splice(i,1);renderTags()};$("tags").insertBefore(s,inp)})}
+
+/* ---------- usage ---------- */
+function loadUsage(){B.usage(usagePeriod,j=>renderUsage(JSON.parse(j)))}
+function renderUsage(u){
+  const tot=u.rows.reduce((a,r)=>{for(const k of ["n","ok","limited","audio_sec","audio_tokens","text_tokens","out_tokens","cost"])a[k]=(a[k]||0)+(r[k]||0);return a},{});
+  $("k-req").textContent=tot.n||0;$("k-audio").textContent=((tot.audio_sec||0)/60).toFixed(1);$("k-tok").textContent=fmtN((tot.audio_tokens||0)+(tot.text_tokens||0)+(tot.out_tokens||0));$("k-cost").textContent="$"+(tot.cost||0).toFixed(4);
+  $("u-call").textContent=u.rows.length?t("u_call",{m:u.monthly.toFixed(2)}):t("u_none");
+  const H=["th_model","th_req","th_ok","th_429","th_audio","th_in","th_text","th_out","th_cost"].map(k=>`<th>${t(k)}</th>`).join("");
+  const row=(r,cls="")=>`<tr class="${cls}"><td>${esc(r.model)}</td><td>${r.n||0}</td><td>${r.ok||0}</td><td style="color:${r.limited?"var(--bad)":""}">${r.limited||0}</td><td>${((r.audio_sec||0)/60).toFixed(1)}m</td><td>${fmtN(r.audio_tokens)}</td><td>${fmtN(r.text_tokens)}</td><td>${fmtN(r.out_tokens)}</td><td>$${(r.cost||0).toFixed(4)}</td></tr>`;
+  $("u-table").innerHTML=`<tr>${H}</tr>`+(u.rows.map(r=>row(r)).join("")+(u.rows.length?row({...tot,model:t("total")},"total"):""));
+  $("lat-table").innerHTML=`<tr><th>${t("th_model")}</th><th>p50</th><th>p90</th><th>${t("th_first")}</th><th>${t("th_avg")}</th></tr>`+
+    u.lat.map(l=>`<tr><td>${esc(l.model.replace("gemini-",""))}</td><td style="color:${latC(l.p50)}">${fmtMs(l.p50)}</td><td style="color:${latC(l.p90)}">${fmtMs(l.p90)}</td><td>${fmtMs(l.ttft)}</td><td>${l.audio==null?"—":l.audio.toFixed(1)+" s"}</td></tr>`).join("");
+  $("lim-table").innerHTML=`<tr><th>${t("th_model")}</th><th>RPM</th><th>RPD</th><th>TPM</th></tr>`+
+    u.limits.map(l=>`<tr><td>${esc(l.model.replace("gemini-",""))}</td>${["rpm","rpd","tpm"].map(k=>`<td><input class="inp" data-m="${l.model}" data-k="${k}" value="${l[k]}" style="${l.learned[k]?"color:var(--acc-2);font-weight:700":""}"></td>`).join("")}</tr>`).join("");
+}
+
+/* ---------- settings ---------- */
+function fillSettings(){
+  const opt=(arr,sel)=>arr.map(o=>`<option value="${o.id??""}" ${String(o.id??"")===String(sel??"")?"selected":""}>${esc(o.label)}</option>`).join("");
+  $("s-key").value=S.api_key||"";
+  $("s-model").innerHTML=opt(D.models,S.model);$("s-model-note").textContent=(D.models.find(m=>m.id===S.model)||{}).note||"";
+  $("s-fb").innerHTML=opt(D.models,S.fallback_model);$("s-usefb").checked=!!S.use_fallback;
+  $("s-hk").innerHTML=opt(D.hotkeys.map(h=>({id:h,label:hkName(h)})),S.hotkey);
+  $("s-dialect").innerHTML=opt(D.dialects,S.dialect);
+  $("s-mic").innerHTML=opt([{id:"",label:t("default_mic")},...D.mics],S.mic);
+  $("s-paste").checked=!!S.auto_paste;$("s-restore").checked=!!S.restore_clipboard;$("s-ctx").checked=!!S.app_context;
+  $("s-trim").checked=!!S.trim_silence;$("s-pill").checked=!!S.overlay_idle;$("s-snd").checked=!!S.sounds;
+  $("sn-list").innerHTML="";(S.snippets||[]).forEach(s=>addPair("sn-list",s.trigger,s.text));
+  $("rp-list").innerHTML="";(S.replacements||[]).forEach(s=>addPair("rp-list",s.from,s.to));
+  vocab=[...(S.vocabulary||[])];renderTags();
+}
+</script>
+</body>
+</html>
