@@ -1,6 +1,55 @@
+<div align="center">
+
+<img src="docs/images/recording.png" alt="Kalam listening" width="100%">
+
 # Kalam · كلام
 
-A local take on Wispr Flow for Windows. Press a hotkey in any app, speak Arabic, English or a mix of both, and the cleaned-up text is typed where your cursor is. It runs on the Gemini API free tier.
+**Talk instead of type, in Arabic, English, or both in one sentence.**
+
+Press a hotkey in any Windows app, speak, and clean text shows up where your cursor is. It runs on the Gemini API free tier.
+
+![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3-3776AB?style=flat-square&logo=python&logoColor=white)
+![Gemini](https://img.shields.io/badge/Gemini-free%20tier-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)
+![Latency](https://img.shields.io/badge/latency-~1.7s-34D399?style=flat-square)
+![Languages](https://img.shields.io/badge/Arabic%20%2B%20English-mixed-5B7CFF?style=flat-square)
+![Local](https://img.shields.io/badge/history-100%25%20local-2B2420?style=flat-square)
+
+[Run](#run) · [Use](#use) · [Screenshots](#-a-look-inside) · [Models](#model-choice-benchmarked-2026-09-26-on-a-23s-mixed-arabicenglish-clip)
+
+</div>
+
+---
+
+## 🎙️ A look inside
+
+<table>
+<tr>
+<td align="center" width="50%"><img src="docs/images/home.png" alt="Home"><br><sub><b>Home</b> · pick a mode, see your last dictation, latency and free-tier quota at a glance</sub></td>
+<td align="center" width="50%"><img src="docs/images/home-ar.png" alt="Arabic UI"><br><sub><b>واجهة عربي كاملة</b> · full right-to-left Arabic interface</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/images/history.png" alt="History"><br><sub><b>History</b> · every dictation, searchable, stored only on your PC</sub></td>
+<td align="center"><img src="docs/images/usage.png" alt="Usage"><br><sub><b>Usage & limits</b> · requests, tokens and what it would cost on the paid tier</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/images/snippets.png" alt="Snippets"><br><sub><b>Snippets</b> · say “my email” and get the full text</sub></td>
+<td align="center"><img src="docs/images/dictionary.png" alt="Dictionary"><br><sub><b>Dictionary</b> · teach it names and terms like ZATCA</sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/images/settings.png" alt="Settings"><br><sub><b>Settings</b> · hotkey, dialect, mic, model and fallback</sub></td>
+<td align="center"><img src="docs/images/home-light.png" alt="Light theme"><br><sub><b>Light theme</b> · one click in the sidebar</sub></td>
+</tr>
+</table>
+
+| | Why people like it |
+|:-:|---|
+| ⚡ | **Fast**: about 1.7 s from releasing the key to text in your app |
+| 🌍 | **Mixed language**: «بكرة عندنا meeting مع الـ client» comes out exactly as you said it |
+| 🧠 | **Three modes**: Smart, Exact, Rewrite (email tone in Outlook) |
+| 🗣️ | **Dialects**: Egyptian, Gulf, Levantine, Formal Arabic |
+| 💸 | **Free**: runs on the Gemini free tier, with live quota gauges |
+| 🔒 | **Private**: settings and history stay in `%APPDATA%\Kalam` |
 
 ## Run
 
